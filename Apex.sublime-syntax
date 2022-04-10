@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+name: Apex
+scope: source.apex
+version: 2
+
+extends: Packages/Java/Java.sublime-syntax
+
+file_extensions:
+  - apex
+  - cls
+  - trigger
+
+first_line_match: |-
+  (?x)
+  ^ \s* // .*? -\*- .*? \bapex\b .*? -\*-  # editorconfig
