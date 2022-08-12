@@ -12,5 +12,114 @@ file_extensions:
   - trigger
 
 first_line_match: |-
-  (?x)
+  (?x:
   ^ \s* // .*? -\*- .*? \bapex\b .*? -\*-  # editorconfig
+  )
+
+authors: [Aziz Köksal <aziz.koeksal@gmail.com>]
+
+variables:
+  storage_modifiers: |-
+    (?x:
+      {{class_modifier}}
+    | {{class_no_modifier}}
+    | global
+    | sharing
+    | with
+    )\b
+
+contexts:
+  java:
+    - meta_prepend: true
+    - include: dml-statements
+
+  block-body:
+    - meta_prepend: true
+    - include: dml-statements
+
+  groups:
+    - meta_prepend: true
+    - include: soql-keywords
+    - include: soql-interpolation
+
+  # See: https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select.htm
+  soql-keywords:
+    - match: |-
+        (?x)(
+        SELECT | FROM | WHERE | (?:ORDER | GROUP) \s+ BY
+        | COUNT | LIMIT | OFFSET | HAVING
+        | WITH (?:\s+ DATA \s+ CATEGORY)?
+        | NOT | IN | AND | OR | LIKE
+        | ASC | DESC
+        | AVG | SUM | MAX | MIN
+        | NULLS \s+ (?:FIRST | LAST)
+        | USING \s+ SCOPE
+        | (?:EX|IN)CLUDES
+        | FOR (?:\s+ (?:VIEW | REFERENCE))?
+        | TYPEOF | END
+        | ROLLUP | CUBE
+        | UPDATE (?:\s+ (?:TRACKING | VIEWSTAT))?
+        )\b
+      scope: keyword.other.soql.apex
+    - match: (?x)(FIELDS)\b \s* (?:(\() \s* (ALL) \s* (\)))?
+      captures:
+        1: keyword.other.soql.apex
+        2: punctuation.section.parens.begin.apex
+        3: keyword.other.soql.apex
+        4: punctuation.section.parens.end.apex
+    # DateTime format:
+    # > Apex DateTimes must be of the form YYYY-mm-DDtHH:MM:SS.NNNzOFFSET.
+    # > YYYY must be a year (AD) 0001-9999. mm must be a month 01-12.
+    # > DD must be a day 01-31. HH must be 00-23, MM must be 00-59, and SS must be 00-59.
+    # > .NNN is optional the milliseconds within the second 000-999.
+    # > OFFSET is the timezone offset and has an optional + or - followed by HHMM or HH:MM.
+    - match: '(?x) \d{4} (?:-\d{2}){2} T \d{2} (?::\d{2}){2} (?:\.\d{3})? Z (?:[-+]? \d{2} :? \d{2})?'
+      scope: constant.language.datetime.apex
+
+  soql-interpolation:
+    - match: ':'
+      scope: keyword.other.interpolation.apex
+
+  member-statements:
+    - meta_prepend: true
+    - include: dml-statements
+
+  dml-statements:
+    - match: (?:insert|update|(?:un)?delete)\b
+      scope: keyword.other.dml.apex
+
+  literal-single-quoted-strings:
+    - match: \'
+      scope: punctuation.definition.string.begin.apex
+      push: literal-single-quoted-string-body-pop
+
+  literal-single-quoted-string-body-pop:
+    - meta_scope: meta.string.apex string.quoted.single.apex
+    - match: (\\.)|(\n)
+      captures:
+        1: constant.character.escape.apex
+        2: invalid.illegal.newline.apex
+    - match: \'
+      scope: punctuation.definition.string.end.apex
+      pop: 1
+
+  illegal-unexpected-keywords:
+    - include: disabled
+
+  illegal-unexpected-reserved:
+    - include: disabled
+
+  illegal-storage-modifiers:
+    - include: disabled
+
+  literal-chars:
+    - include: disabled
+
+  literal-double-quoted-strings:
+    - include: disabled
+
+  literal-double-quoted-textblocks:
+    - include: disabled
+
+  disabled:
+    - match: (?=)
