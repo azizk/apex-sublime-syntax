@@ -1,0 +1,27 @@
+name: Syntax Tests
+
+on:
+  push:
+    paths:
+      - '.github/workflows/main.yml'
+      - '**.sublime-syntax'
+      - '**/syntax_test*'
+      - '**.tmPreferences'
+  pull_request:
+    paths:
+      - '.github/workflows/main.yml'
+      - '**.sublime-syntax'
+      - '**/syntax_test*'
+      - '**.tmPreferences'
+
+jobs:
+  st4_syntax_tests:
+    name: Run ST4 Syntax Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: SublimeText/syntax-test-action@v2
+        with:
+          build: 4134
+          default_packages: v4134
+          package_name: ApexSyntax
